@@ -87,7 +87,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Expanded buildGridView(double screenWidth) {
     final itemWidth = (screenWidth - 48) / 2; // 16 * 2 padding + 16 spacing
-    final itemHeight = itemWidth / 0.70;
+    final itemHeight = itemWidth / 0.68;
     if (controller.productsInfo.value.products == null || controller.productsInfo.value.products!.isEmpty) {
       return Expanded(child: Center(child: Text("No products found")));
     }else{

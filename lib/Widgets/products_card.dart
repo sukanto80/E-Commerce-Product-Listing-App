@@ -14,8 +14,6 @@ class GridProductCard extends StatefulWidget {
   final int? id;
   final double? discount;
 
-
-
   const GridProductCard({
     super.key,
     required this.imageUrl,
@@ -33,7 +31,6 @@ class GridProductCard extends StatefulWidget {
 }
 
 class _GridProductCardState extends State<GridProductCard> {
-
   bool showCounter = false;
 
   Color myBackgroundColor = AppColor.fromHex("#d4d4dc");
@@ -42,15 +39,13 @@ class _GridProductCardState extends State<GridProductCard> {
     double discountedPrice = originalPrice * (1 - discountPercentage / 100);
     return discountedPrice;
   }
+
   @override
   Widget build(BuildContext context) {
-   // double screenHeight = MediaQuery.of(context).size.height;
-   // double imageHeight = screenHeight < 700 ? 140 : 120; // adjust as needed
+    final discountedPrice = calculateDiscountedPrice(widget.price ?? 0, widget.discount ?? 0);
+
     return Container(
-      decoration: BoxDecoration(
-        //borderRadius: BorderRadius.circular(12),
-        //border: Border.all(color: Colors.grey.shade300),
-      ),
+      decoration: BoxDecoration(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -60,15 +55,21 @@ class _GridProductCardState extends State<GridProductCard> {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: Colors.grey.shade200),
-                  color: myBackgroundColor
+                  color: myBackgroundColor,
                 ),
                 child: ClipRRect(
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-                  child: Image.network(
-                    widget.imageUrl!,
+                  child: CachedNetworkImage(
+                    imageUrl: widget.imageUrl!,
                     width: double.infinity,
                     height: 164,
                     fit: BoxFit.cover,
+                    placeholder: (context, url) => Shimmer.fromColors(
+                      baseColor: Colors.grey.shade300,
+                      highlightColor: Colors.grey.shade100,
+                      child: Container(color: Colors.grey.shade300),
+                    ),
+                    errorWidget: (context, url, error) => Icon(Icons.error),
                   ),
                 ),
               ),
@@ -78,17 +79,17 @@ class _GridProductCardState extends State<GridProductCard> {
                 child: Container(
                   padding: const EdgeInsets.all(5),
                   decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(50),
-                    color: Colors.white
+                    borderRadius: BorderRadius.circular(50),
+                    color: Colors.white,
                   ),
-                  child: Icon(
+                  child: const Icon(
                     Icons.favorite_outline,
                     color: Colors.black45,
                     size: 17,
                   ),
                 ),
               ),
-              //if (index == 3)
+              if (widget.stock == 0) //  Show Out of Stock only when stock = 0
                 Positioned(
                   left: 0,
                   top: 0,
@@ -109,49 +110,63 @@ class _GridProductCardState extends State<GridProductCard> {
                 ),
             ],
           ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children:  [
-                Text(
-                  widget.title!,
-                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                SizedBox(height: 4),
-                Row(
-                  children: [
-                    Text(
-                      "\$60 ",
-                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
-                    ),
-                    Text(
-                      "\$75",
-                      style: TextStyle(
-                        fontSize: 11,
-                        decoration: TextDecoration.lineThrough,
-                        color: Colors.grey,
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+               // mainAxisAlignment: MainAxisAlignment.spaceBetween, // <--- Adjust spacing nicely
+                children: [
+                  Text(
+                    widget.title ?? '',
+                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Text(
+                        "\$${discountedPrice.toStringAsFixed(2)} ",
+                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
                       ),
-                    ),
-                    SizedBox(width: 4),
-                    Text(
-                      "25% OFF",
-                      style: TextStyle(fontSize: 10, color: Colors.red),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 4),
-                Row(
-                  children: [
-                    Icon(Icons.star, color: Colors.orange, size: 16),
-                    SizedBox(width: 4),
-                    Text("4.8", style: TextStyle(fontSize: 11)),
-                    Text(" (692)", style: TextStyle(fontSize: 10, color: Colors.grey)),
-                  ],
-                )
-              ],
+                      if (widget.discount != null && widget.discount! > 0)
+                        Row(
+                          children: [
+                            Text(
+                              "\$${widget.price?.toStringAsFixed(2) ?? ''}",
+                              style: const TextStyle(
+                                fontSize: 11,
+                                decoration: TextDecoration.lineThrough,
+                                color: Colors.grey,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              "${widget.discount?.toInt()}% OFF",
+                              style: const TextStyle(fontSize: 10, color: Colors.red),
+                            ),
+                          ],
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      const Icon(Icons.star, color: Colors.orange, size: 16),
+                      const SizedBox(width: 4),
+                      Text(
+                        "${widget.rating?.toStringAsFixed(1) ?? '0.0'}",
+                        style: const TextStyle(fontSize: 11),
+                      ),
+                      Text(
+                        " (${widget.stock ?? 0})",
+                        style: const TextStyle(fontSize: 10, color: Colors.grey),
+                      ),
+                    ],
+                  )
+                ],
+              ),
             ),
           ),
         ],
