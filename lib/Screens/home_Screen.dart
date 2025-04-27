@@ -1,0 +1,130 @@
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import '../AppRoutes/app_routes.dart';
+import '../Widgets/products_card.dart';
+import '../controller/product_&_category_controler.dart';
+
+
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  final ProductCategoryController controller = Get.put(ProductCategoryController());
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    controller.dispose();
+    super.dispose();
+  }
+  //String _searchQuery = '';
+
+  @override
+  Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    return SafeArea(
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        body:Obx((){
+          if (controller.isLoading.value) {
+            return Center(child: CircularProgressIndicator());
+          }else{
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Search Bar
+                Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: TextField(
+                    readOnly: true,
+                    decoration: InputDecoration(
+                      hintText: 'Search by product name...',
+                      prefixIcon: const Icon(Icons.search),
+                      filled: true,
+                      fillColor: Colors.grey[200],
+                      contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                    onTap: (){
+                     Get.toNamed(AppRoutes.searchProduct);
+                      //Get.to(()=>SearchPage());
+                      controller.searchResults.value.clear();
+                    },
+                  ),
+                ),
+
+                 Padding(
+                   padding: const EdgeInsets.only(left: 12,top: 12,bottom: 8),
+                   child: Text('All Products',
+                     style: TextStyle(fontWeight: FontWeight.w500,fontSize: 20),
+                   ),
+                 ),
+                // Grid
+
+                buildGridView(screenWidth)
+              ],
+            );
+          }
+
+        })
+
+
+
+
+
+      ),
+
+    );
+  }
+
+  Expanded buildGridView(double screenWidth) {
+    final itemWidth = (screenWidth - 48) / 2; // 16 * 2 padding + 16 spacing
+    final itemHeight = itemWidth / 0.70;
+    if (controller.productsInfo.value.products == null || controller.productsInfo.value.products!.isEmpty) {
+      return Expanded(child: Center(child: Text("No products found")));
+    }else{
+      return Expanded(
+        child: GridView.builder(
+          padding: const EdgeInsets.all(12),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            mainAxisSpacing: 16,
+            crossAxisSpacing: 16,
+            childAspectRatio: itemWidth / itemHeight,
+          ),
+          itemCount:controller.productsInfo.value.products!.length,
+          itemBuilder: (context, index) {
+            final product = controller.productsInfo.value.products![index];
+            final image = product.images![0];
+            return GestureDetector(
+              onTap: (){
+
+              },
+              child: GridProductCard(
+                imageUrl: image,
+                title: product.title,
+                price: product.price,
+                rating: product.rating,
+                category: product.category,
+                id: product.id,
+                stock: product.stock,
+                discount: product.discountPercentage,
+              ),
+            );
+          },
+        ),
+      );
+    }
+
+
+  }
+
+}
