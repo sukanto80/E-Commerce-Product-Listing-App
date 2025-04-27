@@ -9,15 +9,13 @@ import '../Network/product_&_category.dart';
 
 class ProductCategoryController extends GetxController {
   var productsInfo = ProductsInfo(products: []).obs;
-  var categoryProducts = ProductsInfo(products: []).obs;
   var searchResults = <Product>[].obs;
-  var categories = [].obs;
   var isLoading = false.obs;
   var selectedCategory = ''.obs;
   @override
   void onInit() async {
     print("call onInit");
-    loadCategories();
+
     fetchProducts();
 
     super.onInit();
@@ -28,7 +26,7 @@ class ProductCategoryController extends GetxController {
     isLoading.value = true; // Start loading
 
     try {
-      final fetcher = FetchProductCategory();
+      final fetcher = FetchProduct();
       ProductsInfo response = await fetcher.fetchPostData();
       productsInfo.value = response;
       update();
@@ -44,34 +42,15 @@ class ProductCategoryController extends GetxController {
       update();
     }
   }
-  Future<void> loadProductsByCategory(String category) async {
-    try {
-      final fetcher = FetchProductCategory();
-      isLoading(true);
-      selectedCategory.value = category;
-      categoryProducts.value = await fetcher.fetchProductsByCategory(category);
-      update();
-    } finally {
-      isLoading(false);
-    }
-  }
 
-  Future<void> loadCategories() async {
-    try {
-      final fetcher = FetchProductCategory();
-      isLoading(true);
-      categories.value = await fetcher.fetchCategories();
-      update();
-    } finally {
-      isLoading(false);
-    }
-  }
+
+
 
   void searchProducts(String query) async {
     searchResults.value.clear();
     update();
     isLoading(true);
-    final fetcher = FetchProductCategory();
+    final fetcher = FetchProduct();
     try {
       searchResults.value = await fetcher.searchProducts(query);
       update();

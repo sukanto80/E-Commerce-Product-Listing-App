@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import '../AppRoutes/app_routes.dart';
+import '../Network/product_&_category.dart';
 import '../Widgets/products_card.dart';
 import '../controller/product_&_category_controler.dart';
+import '../controller/product_bloc.dart';
+import '../controller/product_event.dart';
+import '../controller/product_state.dart';
 
 
 class HomeScreen extends StatefulWidget {
@@ -26,69 +31,69 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    return SafeArea(
-      child: Scaffold(
-        backgroundColor: Colors.white,
-        body:Obx((){
-          if (controller.isLoading.value) {
-            return Center(child: CircularProgressIndicator());
-          }else{
-            return Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Search Bar
-                Padding(
-                  padding: const EdgeInsets.all(12.0),
-                  child: TextField(
-                    readOnly: true,
-                    decoration: InputDecoration(
-                      hintText: 'Search by product name...',
-                      prefixIcon: const Icon(Icons.search),
-                      filled: true,
-                      fillColor: Colors.grey[200],
-                      contentPadding: const EdgeInsets.symmetric(vertical: 0),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide.none,
+
+    return BlocProvider(
+      create: (context) => ProductBloc(FetchProduct())..add(FetchProductsEvent()),
+      child: SafeArea(
+        child: Scaffold(
+            backgroundColor: Colors.white,
+            body:
+                 Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Search Bar
+                    Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: TextField(
+                        readOnly: true,
+                        decoration: InputDecoration(
+                          hintText: 'Search by product name...',
+                          prefixIcon: const Icon(Icons.search),
+                          filled: true,
+                          fillColor: Colors.grey[200],
+                          contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                        onTap: (){
+                          Get.toNamed(AppRoutes.searchProduct);
+                          //Get.to(()=>SearchPage());
+                          controller.searchResults.value.clear();
+                        },
                       ),
                     ),
-                    onTap: (){
-                     Get.toNamed(AppRoutes.searchProduct);
-                      //Get.to(()=>SearchPage());
-                      controller.searchResults.value.clear();
-                    },
-                  ),
-                ),
 
-                 Padding(
-                   padding: const EdgeInsets.only(left: 12,top: 12,bottom: 8),
-                   child: Text('All Products',
-                     style: TextStyle(fontWeight: FontWeight.w500,fontSize: 20),
-                   ),
-                 ),
-                // Grid
+                    BlocBuilder<ProductBloc, ProductState>(
+                      builder: (context, state) {
+                        if (state.isLoading) {
+                          return const Center(child: CircularProgressIndicator());
+                        }
+                        if (state.productsInfo.products == null || state.productsInfo.products!.isEmpty) {
+                          return const Center(child: Text("No products found"));
+                        }
+                        return buildGridView(screenWidth,state);
+                      },
+                    )
 
-                buildGridView(screenWidth)
-              ],
-            );
-          }
-
-        })
-
-
-
-
+                  ],
+                )
+        ),
 
       ),
-
     );
+
   }
 
-  Expanded buildGridView(double screenWidth) {
+  Expanded buildGridView(double screenWidth, ProductState state) {
     final itemWidth = (screenWidth - 48) / 2; // 16 * 2 padding + 16 spacing
     final itemHeight = itemWidth / 0.68;
-    if (controller.productsInfo.value.products == null || controller.productsInfo.value.products!.isEmpty) {
+
+
+
+    if (state.productsInfo.products == null || state.productsInfo.products!.isEmpty) {
       return Expanded(child: Center(child: Text("No products found")));
     }else{
       return Expanded(
@@ -100,9 +105,9 @@ class _HomeScreenState extends State<HomeScreen> {
             crossAxisSpacing: 16,
             childAspectRatio: itemWidth / itemHeight,
           ),
-          itemCount:controller.productsInfo.value.products!.length,
+          itemCount:state.productsInfo.products!.length,
           itemBuilder: (context, index) {
-            final product = controller.productsInfo.value.products![index];
+            final product = state.productsInfo.products![index];
             final image = product.images![0];
             return GestureDetector(
               onTap: (){
