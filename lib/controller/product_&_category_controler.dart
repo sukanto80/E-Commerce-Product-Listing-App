@@ -16,19 +16,19 @@ class ProductCategoryController extends GetxController {
   void onInit() async {
     print("call onInit");
 
-    fetchProducts();
+   // fetchProducts();
 
     super.onInit();
   }
 
 
-  fetchProducts() async {
+  /*fetchProducts() async {
     isLoading.value = true; // Start loading
 
     try {
       final fetcher = FetchProduct();
-      ProductsInfo response = await fetcher.fetchPostData();
-      productsInfo.value = response;
+     // ProductsInfo response = await fetcher.fetchPostData();
+      //productsInfo.value = response;
       update();
       if (kDebugMode) {
         print(' fetching products: ${productsInfo.value}');
@@ -41,7 +41,7 @@ class ProductCategoryController extends GetxController {
       isLoading.value = false; // Done loading
       update();
     }
-  }
+  }*/
 
 
 

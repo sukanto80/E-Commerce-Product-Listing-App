@@ -124,32 +124,39 @@ class _GridProductCardState extends State<GridProductCard> {
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Text(
-                        "\$${discountedPrice.toStringAsFixed(2)} ",
-                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
-                      ),
-                      if (widget.discount != null && widget.discount! > 0)
-                        Row(
-                          children: [
-                            Text(
-                              "\$${widget.price?.toStringAsFixed(2) ?? ''}",
-                              style: const TextStyle(
-                                fontSize: 11,
-                                decoration: TextDecoration.lineThrough,
-                                color: Colors.grey,
-                              ),
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              "${widget.discount?.toInt()}% OFF",
-                              style: const TextStyle(fontSize: 10, color: Colors.red),
-                            ),
-                          ],
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Row(
+                      children: [
+                        Text(
+                          "\$${discountedPrice.toStringAsFixed(2)} ",
+                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
                         ),
-                    ],
+                        if (widget.discount != null && widget.discount! > 0)
+                          Row(
+                            children: [
+                              Text(
+                                "\$${widget.price?.toStringAsFixed(2) ?? ''}",
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  decoration: TextDecoration.lineThrough,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                "${widget.discount?.toInt()}% OFF",
+                                style: const TextStyle(fontSize: 10,
+                                    color: Colors.red),
+                              ),
+                            ],
+                          ),
+                      ],
+                    ),
                   ),
+
+
+
                   const SizedBox(height: 4),
                   Row(
                     children: [

@@ -16,3 +16,4 @@ class SearchProductsEvent extends ProductEvent {
   @override
   List<Object?> get props => [query];
 }
+class LoadMoreProductsEvent extends ProductEvent {}

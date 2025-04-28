@@ -19,11 +19,26 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final ProductCategoryController controller = Get.put(ProductCategoryController());
-
+  final ScrollController _scrollController = ScrollController();
+  void _scrollListener() {
+    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 100) {
+      final bloc = context.read<ProductBloc>();
+      if (!bloc.state.isLoadingMore) {
+        bloc.add(LoadMoreProductsEvent());
+      }
+    }
+  }
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _scrollController.addListener(_scrollListener);
+  }
   @override
   void dispose() {
     // TODO: implement dispose
     controller.dispose();
+    //_scrollController.dispose();
     super.dispose();
   }
   //String _searchQuery = '';
@@ -32,9 +47,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
 
-    return BlocProvider(
-      create: (context) => ProductBloc(FetchProduct())..add(FetchProductsEvent()),
-      child: SafeArea(
+    return SafeArea(
         child: Scaffold(
             backgroundColor: Colors.white,
             body:
@@ -68,10 +81,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
                     BlocBuilder<ProductBloc, ProductState>(
                       builder: (context, state) {
+                        print('Total displayed after load more: ${state.displayedProducts.length}');
                         if (state.isLoading) {
                           return const Center(child: CircularProgressIndicator());
                         }
-                        if (state.productsInfo.products == null || state.productsInfo.products!.isEmpty) {
+                        if (state.displayedProducts.isEmpty) {
                           return const Center(child: Text("No products found"));
                         }
                         return buildGridView(screenWidth,state);
@@ -82,8 +96,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 )
         ),
 
-      ),
-    );
+      );
+
 
   }
 
@@ -91,13 +105,12 @@ class _HomeScreenState extends State<HomeScreen> {
     final itemWidth = (screenWidth - 48) / 2; // 16 * 2 padding + 16 spacing
     final itemHeight = itemWidth / 0.68;
 
-
-
-    if (state.productsInfo.products == null || state.productsInfo.products!.isEmpty) {
+    if (state.displayedProducts == null || state.displayedProducts!.isEmpty) {
       return Expanded(child: Center(child: Text("No products found")));
     }else{
       return Expanded(
         child: GridView.builder(
+          controller: _scrollController,
           padding: const EdgeInsets.all(12),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
@@ -105,16 +118,14 @@ class _HomeScreenState extends State<HomeScreen> {
             crossAxisSpacing: 16,
             childAspectRatio: itemWidth / itemHeight,
           ),
-          itemCount:state.productsInfo.products!.length,
-          itemBuilder: (context, index) {
-            final product = state.productsInfo.products![index];
-            final image = product.images![0];
-            return GestureDetector(
-              onTap: (){
+          itemCount: state.displayedProducts.length + (state.isLoadingMore ? 1 : 0),
 
-              },
-              child: GridProductCard(
-                imageUrl: image,
+          itemBuilder: (context, index) {
+            print("Product item count>>>>>>>>>:${state.displayedProducts.length}");
+            if (index < state.displayedProducts.length) {
+              final product = state.displayedProducts[index];
+              return GridProductCard(
+                imageUrl: product.images![0],
                 title: product.title,
                 price: product.price,
                 rating: product.rating,
@@ -122,8 +133,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 id: product.id,
                 stock: product.stock,
                 discount: product.discountPercentage,
-              ),
-            );
+              );
+            } else {
+              return const Center(child: CircularProgressIndicator()); // 👈 loader
+            }
           },
         ),
       );
